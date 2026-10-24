@@ -180,7 +180,7 @@
               var s2 = S.getDay(x.id, S.todayISO());
               return '<div class="today-row">' +
                 '<span class="avatar sm">' + esc(initial(x.name)) + '</span>' +
-                '<div class="grow name">' + esc(x.name) + '</div>' +
+                '<div class="grow name" data-act="open-helper" data-id="' + x.id + '">' + esc(x.name) + '</div>' +
                 '<button class="btn sm ' + (s2 === 'P' ? 'green' : 'secondary') + '" data-act="today-P" data-id="' + x.id + '">✔ ' + T('present') + '</button>' +
                 '<button class="btn sm ' + (s2 === 'A' ? 'red' : 'secondary') + '" data-act="today-A" data-id="' + x.id + '">✖ ' + T('absent') + '</button>' +
                 '</div>';

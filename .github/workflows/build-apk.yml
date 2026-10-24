@@ -48,6 +48,23 @@ jobs:
           npx --yes @capacitor/assets generate --android --icon-background-color '#FBF7F2' \
             || (python3 -m pip install --quiet pillow && python3 scripts/make_icons.py)
 
+      - name: Brand colours (saffron status bar)
+        run: |
+          python3 - <<'PY'
+          import os, re
+          path = 'android/app/src/main/res/values/colors.xml'
+          want = {'colorPrimary': '#E8620A', 'colorPrimaryDark': '#C34E05', 'colorAccent': '#E8620A'}
+          extra = ''
+          if os.path.exists(path):
+              m = re.search(r'<color name="ic_launcher_background">([^<]*)</color>', open(path).read())
+              if m:
+                  extra = '    <color name="ic_launcher_background">%s</color>\n' % m.group(1)
+          body = ''.join('    <color name="%s">%s</color>\n' % (k, v) for k, v in want.items())
+          with open(path, 'w') as f:
+              f.write('<?xml version="1.0" encoding="utf-8"?>\n<resources>\n' + body + extra + '</resources>\n')
+          print(open(path).read())
+          PY
+
       - name: Prepare signing key
         env:
           SIGNING_KEYSTORE_BASE64: ${{ secrets.SIGNING_KEYSTORE_BASE64 }}
@@ -110,16 +127,41 @@ jobs:
           "$SDK/build-tools/$BT/apksigner" verify HouseHelp-Record.apk
           ls -lh HouseHelp-Record.apk
 
+      - name: Check the APK really contains the app
+        run: |
+          python3 - <<'PY'
+          import sys, zipfile
+          z = zipfile.ZipFile('HouseHelp-Record.apk')
+          names = z.namelist()
+          checks = {
+              'AndroidManifest.xml':        'AndroidManifest.xml' in names,
+              'web app index.html':         'assets/public/index.html' in names,
+              'web app js/app.js':          'assets/public/js/app.js' in names,
+              'web app css':                'assets/public/css/app.css' in names,
+              'launcher icons':             any(n.startswith('res/') and 'ic_launcher' in n for n in names),
+              'dex bytecode':               any(n.endswith('.dex') for n in names),
+          }
+          for k, v in checks.items():
+              print(('OK   ' if v else 'FAIL ') + k)
+          sys.exit(0 if all(checks.values()) else 1)
+          PY
+
       - name: Publish GitHub release with the APK
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: ${{ github.event.inputs.tag || github.ref_name }}
         run: |
+          cp RELEASE_NOTES.md notes.md
+          {
+            echo ""
+            echo "---"
+            echo "**HouseHelp-Record.apk** · $(du -h HouseHelp-Record.apk | cut -f1) · SHA-256 \`$(sha256sum HouseHelp-Record.apk | cut -d' ' -f1)\`"
+          } >> notes.md
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release upload "$TAG" HouseHelp-Record.apk --clobber
           else
             gh release create "$TAG" HouseHelp-Record.apk \
               --target "$GITHUB_SHA" \
-              --title "House Help Record $TAG" \
-              --notes-file RELEASE_NOTES.md
+              --title "कामवाली रिकॉर्ड · House Help Record $TAG" \
+              --notes-file notes.md
           fi

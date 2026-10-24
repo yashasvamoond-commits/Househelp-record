@@ -27,7 +27,7 @@ On the phone:
 
 1. Open this link in Chrome on your Android phone.
 2. When Android asks, allow **“Install unknown apps”** for the browser (Settings → Apps → Chrome → Install unknown apps), then tap **Install**.
-3. Open **House Help Record** from the app drawer.
+3. Open **कामवाली रिकॉर्ड (House Help Record)** from the app drawer.
 
 *Minimum: Android 6.0 (API 23) or newer. Works fully offline.*
 
