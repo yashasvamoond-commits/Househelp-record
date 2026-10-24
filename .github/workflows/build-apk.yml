@@ -122,26 +122,23 @@ jobs:
         run: |
           mkdir -p .ci-logs
           python3 - <<'PY'
-          import os, sys, zipfile
+          import glob, os, sys, zipfile
           z = zipfile.ZipFile('HouseHelp-Record.apk')
           names = z.namelist()
+          pngs = [n for n in names if n.startswith('res/') and n.endswith('.png')]
           checks = {
-              'AndroidManifest.xml': 'AndroidManifest.xml' in names,
-              'index.html':          'assets/public/index.html' in names,
-              'js/app.js':           'assets/public/js/app.js' in names,
-              'css/app.css':         'assets/public/css/app.css' in names,
-              'launcher icons':      any('ic_launcher' in n for n in names),
-              'dex bytecode':        any(n.endswith('.dex') for n in names),
+              'AndroidManifest.xml':       'AndroidManifest.xml' in names,
+              'compiled resources':        'resources.arsc' in names,
+              'web app index.html':        'assets/public/index.html' in names,
+              'web app js/app.js':         'assets/public/js/app.js' in names,
+              'web app css/app.css':       'assets/public/css/app.css' in names,
+              'dex bytecode':              any(n.endswith('.dex') for n in names),
+              'drawable resources':        len(pngs) > 5,
+              'launcher icons in source':  bool(glob.glob('android/app/src/main/res/mipmap-*/ic_launcher.png')),
           }
           report = [('OK   ' if v else 'FAIL ') + k for k, v in checks.items()]
           report.append('')
-          report.append('total entries: %d' % len(names))
-          report.append('')
-          report.append('all res/ entries:')
-          report.extend('  ' + n for n in sorted(names) if n.startswith('res/'))
-          report.append('')
-          report.append('non-assets entries:')
-          report.extend('  ' + n for n in sorted(names) if not n.startswith('assets/') and not n.startswith('META-INF/'))
+          report.append('apk entries: %d (of which %d res/ png)' % (len(names), len(pngs)))
           text = '\n'.join(report)
           print(text)
           open('.ci-logs/apkcheck.txt', 'w').write(text + '\n')
