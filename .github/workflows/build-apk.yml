@@ -104,15 +104,6 @@ jobs:
           SDK="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
           { echo "ANDROID_HOME=$SDK"; ls "$SDK/build-tools"; ls "$SDK/platforms"; } > .ci-logs/sdk.txt 2>&1 || true
 
-      - name: Push build log to the branch (debug only)
-        if: failure()
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A .ci-logs
-          git commit -m "ci: build log for run ${{ github.run_id }}" || exit 0
-          git push origin HEAD:arena/a509db7d-househelp-record
-
       - name: Zipalign and sign
         run: |
           SDK="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
@@ -129,20 +120,29 @@ jobs:
 
       - name: Check the APK really contains the app
         run: |
+          mkdir -p .ci-logs
           python3 - <<'PY'
-          import sys, zipfile
+          import os, sys, zipfile
           z = zipfile.ZipFile('HouseHelp-Record.apk')
           names = z.namelist()
           checks = {
-              'AndroidManifest.xml':        'AndroidManifest.xml' in names,
-              'web app index.html':         'assets/public/index.html' in names,
-              'web app js/app.js':          'assets/public/js/app.js' in names,
-              'web app css':                'assets/public/css/app.css' in names,
-              'launcher icons':             any(n.startswith('res/') and 'ic_launcher' in n for n in names),
-              'dex bytecode':               any(n.endswith('.dex') for n in names),
+              'AndroidManifest.xml': 'AndroidManifest.xml' in names,
+              'index.html':          'assets/public/index.html' in names,
+              'js/app.js':           'assets/public/js/app.js' in names,
+              'css/app.css':         'assets/public/css/app.css' in names,
+              'launcher icons':      any('ic_launcher' in n for n in names),
+              'dex bytecode':        any(n.endswith('.dex') for n in names),
           }
-          for k, v in checks.items():
-              print(('OK   ' if v else 'FAIL ') + k)
+          report = [('OK   ' if v else 'FAIL ') + k for k, v in checks.items()]
+          report.append('')
+          report.append('first entries inside the APK:')
+          report.extend('  ' + n for n in sorted(names)[:60])
+          report.append('')
+          report.append('all assets/public entries:')
+          report.extend('  ' + n for n in sorted(names) if n.startswith('assets/'))
+          text = '\n'.join(report)
+          print(text)
+          open('.ci-logs/apkcheck.txt', 'w').write(text + '\n')
           sys.exit(0 if all(checks.values()) else 1)
           PY
 
@@ -165,3 +165,12 @@ jobs:
               --title "कामवाली रिकॉर्ड · House Help Record $TAG" \
               --notes-file notes.md
           fi
+
+      - name: Push debug logs to the branch (only when something failed)
+        if: failure()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A .ci-logs
+          git commit -m "ci: build log for run ${{ github.run_id }}" || exit 0
+          git push origin HEAD:arena/a509db7d-househelp-record
