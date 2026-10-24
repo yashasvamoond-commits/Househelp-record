@@ -1,0 +1,17 @@
+{
+  "name": "कामवाली रिकॉर्ड | House Help Record",
+  "short_name": "कामवाली",
+  "description": "House help attendance, salary and advance (udhaar) register in Hindi and English.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FBF7F2",
+  "theme_color": "#E8620A",
+  "lang": "hi",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

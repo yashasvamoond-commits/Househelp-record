@@ -1,0 +1,15 @@
+{
+  "appId": "com.househelp.record",
+  "appName": "House Help Record",
+  "webDir": "www",
+  "loggingEnabled": false,
+  "android": {
+    "allowMixedContent": false,
+    "webContentsDebuggingEnabled": false
+  },
+  "plugins": {
+    "Share": {
+      "updater": false
+    }
+  }
+}

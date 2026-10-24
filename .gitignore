@@ -1,0 +1,7 @@
+node_modules/
+android/
+.DS_Store
+*.jks
+*.keystore
+app-aligned.apk
+Unselected files/
