@@ -135,11 +135,13 @@ jobs:
           }
           report = [('OK   ' if v else 'FAIL ') + k for k, v in checks.items()]
           report.append('')
-          report.append('first entries inside the APK:')
-          report.extend('  ' + n for n in sorted(names)[:60])
+          report.append('total entries: %d' % len(names))
           report.append('')
-          report.append('all assets/public entries:')
-          report.extend('  ' + n for n in sorted(names) if n.startswith('assets/'))
+          report.append('all res/ entries:')
+          report.extend('  ' + n for n in sorted(names) if n.startswith('res/'))
+          report.append('')
+          report.append('non-assets entries:')
+          report.extend('  ' + n for n in sorted(names) if not n.startswith('assets/') and not n.startswith('META-INF/'))
           text = '\n'.join(report)
           print(text)
           open('.ci-logs/apkcheck.txt', 'w').write(text + '\n')
