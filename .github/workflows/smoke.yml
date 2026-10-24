@@ -1,8 +1,10 @@
 name: smoke
 on:
+  push:
+    branches: ['**']
   workflow_dispatch:
 jobs:
   smoke:
     runs-on: ubuntu-latest
     steps:
-      - run: echo hello
+      - run: echo hello from ${{ github.ref_name }}
