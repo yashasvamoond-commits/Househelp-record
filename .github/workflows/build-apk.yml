@@ -63,11 +63,38 @@ jobs:
             echo "No SIGNING_KEYSTORE_BASE64 secret - generated a one-off key for this build"
           fi
 
-      - name: Build release APK
+      - name: Show Android SDK contents
         run: |
+          SDK="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
+          echo "ANDROID_HOME=$SDK"
+          ls "$SDK" || true
+          ls "$SDK/build-tools" || true
+          ls "$SDK/platforms" || true
+
+      - name: Build release APK
+        id: gradle
+        run: |
+          set -o pipefail
           cd android
           chmod +x gradlew
-          ./gradlew assembleRelease --no-daemon --stacktrace
+          ./gradlew assembleRelease --no-daemon --stacktrace 2>&1 | tee ../gradle-build.log
+
+      - name: Keep build log for debugging
+        if: always()
+        run: |
+          mkdir -p .ci-logs
+          cp gradle-build.log .ci-logs/gradle.log 2>/dev/null || true
+          SDK="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
+          { echo "ANDROID_HOME=$SDK"; ls "$SDK/build-tools"; ls "$SDK/platforms"; } > .ci-logs/sdk.txt 2>&1 || true
+
+      - name: Push build log to the branch (debug only)
+        if: failure()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A .ci-logs
+          git commit -m "ci: build log for run ${{ github.run_id }}" || exit 0
+          git push origin HEAD:arena/a509db7d-househelp-record
 
       - name: Zipalign and sign
         run: |

@@ -61,6 +61,7 @@
     btnPay:       { hi: 'सैलरी का हिसाब', en: 'Salary & Payment' },
     deleteHelper: { hi: 'काम वाले को हटाएँ', en: 'Delete helper' },
     deleteHelperConfirm: { hi: 'क्या {n} की सारी जानकारी हटा दें? यह वापस नहीं आएगी।', en: 'Delete all records of {n}? This cannot be undone.' },
+    todayAttendance: { hi: 'आज की हाज़िरी', en: "Today's attendance" },
     markTodayPresent: { hi: 'आज हाज़िर ✔', en: 'Mark today present' },
     markTodayAbsent:  { hi: 'आज नहीं आए ✖', en: 'Mark today absent' },
 

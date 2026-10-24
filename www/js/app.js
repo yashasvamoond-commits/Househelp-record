@@ -173,7 +173,21 @@
           '<div class="stat"><b>' + money(Math.max(totDue, 0)) + '</b><span>' + T('salaryDue') + '</span></div>' +
         '</div>' +
       '</div>' +
-      (helpers.length ? '<div class="section-title">' + T('myHelpers') + '</div>' + cards : emptyHtml);
+      (helpers.length
+        ? '<div class="card"><div class="row between" style="margin-bottom:4px"><b>' + T('todayAttendance') + '</b>' +
+            '<span class="tiny muted">' + I18n.date(S.todayISO(), true) + '</span></div>' +
+            helpers.map(function (x) {
+              var s2 = S.getDay(x.id, S.todayISO());
+              return '<div class="today-row">' +
+                '<span class="avatar sm">' + esc(initial(x.name)) + '</span>' +
+                '<div class="grow name">' + esc(x.name) + '</div>' +
+                '<button class="btn sm ' + (s2 === 'P' ? 'green' : 'secondary') + '" data-act="today-P" data-id="' + x.id + '">✔ ' + T('present') + '</button>' +
+                '<button class="btn sm ' + (s2 === 'A' ? 'red' : 'secondary') + '" data-act="today-A" data-id="' + x.id + '">✖ ' + T('absent') + '</button>' +
+                '</div>';
+            }).join('') +
+          '</div>' +
+          '<div class="section-title">' + T('myHelpers') + '</div>' + cards
+        : emptyHtml);
   }
 
   function screenHelper() {
@@ -645,8 +659,10 @@
         var next = order[(order.indexOf(cur) + 1) % order.length];
         S.setDay(h.id, d, next); render(); break;
       }
-      case 'today-P': S.setDay(h.id, S.todayISO(), 'P'); render(); toast(T('saved')); break;
-      case 'today-A': S.setDay(h.id, S.todayISO(), 'A'); render(); toast(T('saved')); break;
+      case 'today-P':
+      case 'today-A':
+        S.setDay(el.dataset.id || h.id, S.todayISO(), act === 'today-P' ? 'P' : 'A');
+        render(); toast(T('saved')); break;
       case 'cal-prev': state.cal = shift(state.cal, -1); render(); break;
       case 'cal-next': state.cal = shift(state.cal, 1); render(); break;
       case 'mark-all': S.markAllPresent(h.id, state.cal.y, state.cal.m); render(); toast(T('saved')); break;
